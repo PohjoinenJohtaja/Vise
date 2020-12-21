@@ -2,67 +2,107 @@
 #include <Arduino.h>                                                                        // подключаем ардуино
 
 // инициализация системы
-Stepper_Motor::Stepper_Motor(uint8_t stepPin, uint8_t dirPin, uint8_t stepDivision = 1) {   // конструктор
+Stepper_Motor::Stepper_Motor(uint8_t stepPin, uint8_t dirPin, uint8_t stepDivision) {       // конструктор
     _stepPin = stepPin;                                                                     // запоминаем пин,подключённый к STEP
     _dirPin = dirPin;                                                                       // запоминаем пин,подключённый к DIR
-    _stepDivision = stepDivision;}                                                          // запоминаем режим микрошага (1, 2, 4...)
-void Stepper_Motor::setDirection(bool direction = 0) {_direction = direction;}              // устанавливаем направление движения мотора
-void Stepper_Motor::setGearRatio(float ratio = 1) {_ratio = ratio;}                         // устанавливаем передаточное (ratio > 1 - редуктор; 0 < ratio < 1 - мультипликатор) 
-void Stepper_Motor::setThreadPitch(float pitch = 2) {_pitch = pitch;}                       // устанавливаем шаг резьбы (по умолчанию - 2мм)
-void Stepper_Motor::setRailLength(uint16_t lenght) {_lenght = lenght;}                      // устанавливаем рабочую длину направляющей (в мм)
+    _stepDivision = stepDivision;                                                           // запоминаем режим микрошага (1, 2, 4...)
+    pinMode (_stepPin, OUTPUT);
+    pinMode (_dirPin, OUTPUT);
+    Stepper_Motor::setDirection(0);
+    Stepper_Motor::setGearRatio(1);
+    Stepper_Motor::setThreadPitch(1);
+    Stepper_Motor::setCoordinateSystem(0);
+    Stepper_Motor::setLinearSpeed(1);
+    Stepper_Motor::setLinearAcceleration(2);
+    Stepper_Motor::setAngularSpeed(1);
+    Stepper_Motor::setAngularAcceleration(2);
+    }                                                          
+void Stepper_Motor::setDirection(bool direction) {_direction = direction;}                  // устанавливаем направление движения мотора
+void Stepper_Motor::setGearRatio(float ratio) {_ratio = ratio;}                             // устанавливаем передаточное (ratio > 1 - редуктор; 0 < ratio < 1 - мультипликатор) 
+void Stepper_Motor::setThreadPitch(float pitch) {_pitch = pitch;}                           // устанавливаем шаг резьбы (по умолчанию - 2мм)
 
 // методы для взаимодействия с механизмом
-void Stepper_Motor::setCoordinateSystem(bool system = 0) {_system = system;}                // устанавливает систему координат (0 - абсолютаня, 1 - относительная)
+void Stepper_Motor::setCoordinateSystem(bool system) {_system = system;}                    // устанавливает систему координат (0 - абсолютаня, 1 - относительная)
 void Stepper_Motor::setZeroPosition() {_stepPos = 0;}                                       // установить текущее положение как нулевое
 
 void Stepper_Motor::goLinearPosition(float linPos){                                         // перемещает каретку на координату
-    float dx = linPos - !_system * (float)_stepPos*_pitch/_ratio/_division/200;             // считаем на сколько надо переместиться
-    long steps=(long) dx*_ratio*_stepDivision*200/_pitch;                                   // переводим милиметры в шаги
-    if (dx>0) moveMotor(steps, 1);                                                          // определяем направление движения
-    else moveMotor(-steps, 0);
+    int32_t steps=(int32_t) linPos*_ratio*_stepDivision*200/_pitch - (int32_t) !_system*_stepPos;    // переводим милиметры в шаги
+    if (steps>0) moveMotor(steps, 1, 0);                                                    // определяем направление движения
+    else moveMotor(-steps, 0, 0);
     _stepPos += steps;                                                                      // запоминаем позицию
 }
-void Stepper_Motor::setLinearSpeed(uint16_t linSpeed = 75) {_linSpeed = linSpeed;}          // устанавливает линейную скорость движения
-void Stepper_Motor::setLinearAcceleration(uint16_t linAccel = 15) {_linAccel = linAccel;}   // устанавливает линейное ускорение движения
+void Stepper_Motor::setLinearSpeed(float linSpeed) {                                        // устанавливает линейную скорость движения
+    _linSpeed = (float) linSpeed*_ratio*_stepDivision*200/_pitch;}
+void Stepper_Motor::setLinearAcceleration(float linAccel) {                                 // устанавливает линейное ускорение движения
+    _linAccel = (float) linAccel*_ratio*_stepDivision*200/_pitch;}
 float Stepper_Motor::getLinearPosition(){                                                   // возвращает абсолютную координату
     return (float)_stepPos*_pitch/_ratio/_stepDivision/200;}
     
 void Stepper_Motor::goAngularPosition(float angulPos){                                      // перемещает вал на угол
-    float dalfa = angulPos - !_system * (float)_stepPos*_pitch*1.8/_ratio/_division;        // считаем на сколько градусов надо переместиться
-    long steps=(long) dalfa*_ratio*_stepDivision/_pitch/1.8;                                // переводим градусы в шаги
-    if (dalfa>0) moveMotor(steps, 1);                                                          // определяем направление движения
-    else moveMotor(-steps, 0);
+    int32_t steps=(int32_t) angulPos*_ratio*_stepDivision*200/360 - (int32_t) !_system*_stepPos;// переводим градусы в шаги
+    if (steps>0) moveMotor(steps, 1, 1);                                                    // определяем направление движения
+    else moveMotor(-steps, 0, 1);
     _stepPos += steps;                                                                      // запоминаем позицию
 }
-void Stepper_Motor::setAngularSpeed(uint16_t anguSpeed = 75){_anguSpeed = anguSpeed;}       // устанавливает угловую скорость движения
-void Stepper_Motor::setAngularAcceleration(uint16_t anguAccel = 15){_anguAccel = anguAccel;}// устанавливает угловое ускорение движения
+void Stepper_Motor::setAngularSpeed(float anguSpeed){                                       // устанавливает угловую скорость движения
+    _anguSpeed = (float) anguSpeed*_ratio*_stepDivision*200;}                               // устанавливает угловую скорость движения
+void Stepper_Motor::setAngularAcceleration(float anguAccel){                                // устанавливает угловое ускорение движения
+    _anguAccel = (float) anguAccel*_ratio*_stepDivision*200;}
 float Stepper_Motor::getAngularPosition(){                                                  // возвращает абсолютный угол
-    return (float)_stepPos*_pitch*1.8/_ratio/_stepDivision;}
+    return (float)_stepPos*1.8/_ratio/_stepDivision;}
 
 void Stepper_Motor::moveMotor(uint32_t steps, bool dir, bool type){                         // метод перемещения (кол-во шагов, направление)
+    float Speed;
+    float Acceleration;
     if (type) {                                                                             // если type - 1, перемещения угловые
-        uint16_t speed = _anguSpeed;
-        uint16_t acceleration = _anguAccel;
+        Speed = _anguSpeed;
+        Acceleration = _anguAccel;
     }
     else {                                                                                  // если type - 0, перемещения линейные
-        uint16_t speed = _linSpeed;
-        uint16_t acceleration = _linAccel;
+        Speed = _linSpeed;
+        Acceleration = _linAccel;
     }
-    const long DelayMicros = (long)30*1000*1000/speed/_stepDivision;                        // рассчитываем время задержки
-    long told = micros();
-    for (long i=0; i<steps; i++)
-    {
-        float accel = (float)acceleration/30*1000*1000;
-        float Sqrt = sqrt((long)2*30*1000*1000/acceleration);
-        long t = micros() - told;
-        long DelayAccel = (long) Sqrt / (1 + (long)t*Sqrt*acceleration/2/30/1000/1000);
+    const uint32_t DelayMicros = (uint32_t)500*1000/Speed;                                  // рассчитываем время задержки максимальной скорости
+    float delenie = (float) 1000*1000/Acceleration;                                         // переводим ускорение в микросекунды
+    uint32_t Vel0 = 10954.45*sqrt(delenie);                                                 // расчитываем первое время для формулы ускорения    
+    float delenie2 = (float)Vel0/500/1000/delenie;                                          // отдельная переменная для упрощения расчёта в цикле
 
-        if (DelayAccel < DelayMicros) DelayAccel = DelayMicros;
-    
-        digitalWrite(_dirPin, (bool) dir+_direction);
-        digitalWrite(_stepPin, HIGH);
-        delayMicroseconds(DelayAccel-5);
-        digitalWrite(_stepPin, LOW);
-        delayMicroseconds(DelayAccel-10);
+    digitalWriteFast(_dirPin, (bool) dir+_direction);                                       // устанавливаем направление
+
+    uint32_t told = micros();                                                               // фиксируем начальное время
+    for (uint32_t i=0; i<steps; i++)                                                        // делаем steps шагов
+    {
+        uint32_t t = micros() - told;                                                       // время, прошедшее с начала выполнения цикла
+        uint32_t DelayAccel = (uint32_t) Vel0 / (2 + (float)t*delenie2);                    // рассчитываем время задержки
+        if (DelayAccel < DelayMicros) DelayAccel = DelayMicros;                             // если нужная скорость достигнута, a = 0
+        
+        digitalWriteFast(_stepPin, HIGH);                                                   // подача импульсов
+        delayMicroseconds(DelayAccel-1);
+        digitalWriteFast(_stepPin, LOW);
+        delayMicroseconds(DelayAccel);
+  }
+}
+
+void Stepper_Motor::digitalWriteFast(uint8_t pin, bool x) {                                 // метод быстрого чтения
+  switch (pin) {                                                                            // отключаем ШИМ
+    case 3: bitClear(TCCR2A, COM2B1);
+      break;
+    case 5: bitClear(TCCR0A, COM0B1);
+      break;
+    case 6: bitClear(TCCR0A, COM0A1);
+      break;
+    case 9: bitClear(TCCR1A, COM1A1);
+      break;
+    case 10: bitClear(TCCR1A, COM1B1);
+      break;
+    case 11: bitClear(TCCR2A, COM2A1);
+      break;
+  }
+  if (pin < 8) {                                                                            //выбираем порт и устанавливаем пин (0, 1)
+    bitWrite(PORTD, pin, x);
+  } else if (pin < 14) {
+    bitWrite(PORTB, (pin - 8), x);
+  } else if (pin < 20) {
+    bitWrite(PORTC, (pin - 14), x);
   }
 }

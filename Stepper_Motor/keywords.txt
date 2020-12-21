@@ -1,0 +1,17 @@
+Stepper_Motor  		    KEYWORD1
+
+setDirection  		    KEYWORD2
+setGearRatio  		    KEYWORD2
+setThreadPitch  	    KEYWORD2
+setCoordinateSystem  	KEYWORD2
+setZeroPosition  	    KEYWORD2
+
+goLinearPosition 	    KEYWORD2
+setLinearSpeed	 	    KEYWORD2
+setLinearAcceleration 	KEYWORD2
+getLinearPosition 	    KEYWORD2
+
+goAngularPosition 	    KEYWORD2
+setAngularSpeed	 	    KEYWORD2
+setAngularAcceleration 	KEYWORD2
+getAngularPosition 	    KEYWORD2
