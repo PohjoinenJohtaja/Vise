@@ -1,0 +1,69 @@
+#define pinSTEP 3                 // пин, подключённый к STEP драйвера
+#define pinDIR 2                  // пин, подключённый к DIR драйвера
+#define microstep 16              // деление шага
+#define Delay 1000                // время задержки
+#include "Stepper_Motor.h"        // подключаем библиотеку
+
+Stepper_Motor Motor1(pinSTEP, pinDIR, microstep); // создаём объект мотора
+
+void setup() {
+  Serial.begin(9600);                       // начинаем связь через Serial порт
+  Serial.println(Motor1.getLinearPosition());  // Получаем начальный угол в абсолютной системе
+
+  //Motor1.setGearRatio(1);                 // установка передаточного отношения (ratio > 1 - редуктор; 0 < ratio < 1 - мультипликатор)
+  //Motor1.setThreadPitch(1);               // установка шага винта (мм) или диаметра шкива (по умолчанию - 1)
+  //Motor1.setDirection(0);                 // установка направления движения мотора (по умолчанию - 0)
+  //Motor1.setLinearSpeed(1);               // по умолчанию скорость 1 мм/с
+  //Motor1.setLinearAcceleration(2);        // по умолчанию ускорение 2 мм/с^2
+
+  // перемещение в абсолютной системе координат
+  ///*
+  Motor1.setCoordinateSystem(0);            // устанавливаем систему координат (по умолчанию - абсолютная)
+  Motor1.goLinearPosition(5);               // перемещение в позицию 5 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(2);                 // установка скорости 2 мм/сек
+  Motor1.goLinearPosition(5*2);             // перемещение в позицию 10 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(3);                 // установка скорости 3 мм/сек
+  Motor1.goLinearPosition(5*3);             // перемещение в позицию 15 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(4);                 // установка скорости 4 мм/сек
+  Motor1.goLinearPosition(5*4);             // перемещение в позицию 20 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(5);                 // установка скорости 5 мм/сек
+  Motor1.goLinearPosition(0);               // перемещение в позицию 0 мм
+  Serial.println(Motor1.getLinearPosition());  // Получаем конечный угол в абсолютной системе
+  //*/
+
+  //перемещение в относительной системе координат
+  /*
+  Motor1.setCoordinateSystem(1);            // устанавливаем систему координат (по умолчанию - абсолютная)
+  Motor1.goLinearPosition(5);               // перемещение на 5 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(2);                 // установка скорости 2 мм/сек
+  Motor1.goLinearPosition(5);               // перемещение на 5 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(3);                 // установка скорости 3 мм/сек
+  Motor1.goLinearPosition(5);               // перемещение на 5 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(4);                 // установка скорости 4 мм/сек
+  Motor1.goLinearPosition(5);               // перемещение на 5 мм
+  delay(Delay);                             // задержка
+
+  Motor1.setLinearSpeed(5);                 // установка скорости 5 мм/сек
+  Motor1.goLinearPosition(-20);             // перемещение на -20 мм
+  Serial.println(Motor1.getLinearPosition());  // Получаем конечный угол в абсолютной системе
+  */
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+}
