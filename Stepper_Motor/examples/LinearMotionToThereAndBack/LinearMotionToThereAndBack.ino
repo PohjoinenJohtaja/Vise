@@ -8,29 +8,30 @@ Stepper_Motor Motor1(pinSTEP, pinDIR, microstep); // создаём объект
 
 void setup() {
   Serial.begin(9600);                       // начинаем связь через Serial порт
-  Serial.println(Motor1.getAngularPosition());  // Получаем начальный угол в абсолютной системе
+  Serial.println(Motor1.getLinearPosition());  // Получаем начальную позицию в абсолютной системе
 
   //Motor1.setGearRatio(1);                 // установка передаточного отношения (ratio > 1 - редуктор; 0 < ratio < 1 - мультипликатор)
+  Motor1.setThreadPitch(2);               // установка шага винта (мм) или диаметра шкива (по умолчанию - 1)
   //Motor1.setDirection(0);                 // установка направления движения мотора (по умолчанию - 0)
-  //Motor1.setAngularSpeed(1);              // по умолчанию скорость 1 об/с
-  //Motor1.setAngularAcceleration(2);       // по умолчанию ускорение 2 об/с^2
+  //Motor1.setLinearSpeed(1);               // по умолчанию скорость 1 мм/с
+  //Motor1.setLinearAcceleration(2);        // по умолчанию ускорение 2 мм/с^2
 
   // перемещение в абсолютной системе координат
   // /*
   Motor1.setCoordinateSystem(0);            // устанавливаем систему координат (по умолчанию - абсолютная)
-  Motor1.goAngularPosition(360);            // перемещение в позицию 360 градусов
+  Motor1.goLinearPosition(10);              // перемещение в позицию 10 милиметров
   delay(Delay);                             // задержка
-  Motor1.goAngularPosition(0);              // перемещение в позицию 0 градусов
-  Serial.println(Motor1.getAngularPosition());  // Получаем конечный угол в абсолютной системе
+  Motor1.goLinearPosition(0);               // перемещение в позицию 0 милиметров
+  Serial.println(Motor1.getLinearPosition());  // Получаем конечную позицию в абсолютной системе
   // */
 
   //перемещение в относительной системе координат
   /*
   Motor1.setCoordinateSystem(1);            // устанавливаем систему координат (по умолчанию - абсолютная)
-  Motor1.goAngularPosition(360);            // перемещение на 360 градусов
+  Motor1.goLinearPosition(10);              // перемещение на 10 милиметров
   delay(Delay);                             // задержка
-  Motor1.goAngularPosition(-360);           // перемещение на -360 градусов
-  Serial.println(Motor1.getAngularPosition());  // Получаем конечный угол в абсолютной системе
+  Motor1.goLinearPosition(-10);             // перемещение на -10 милиметров
+  Serial.println(Motor1.getLinearPosition());  // Получаем конечную позицию в абсолютной системе
   */
 }
 
