@@ -64,23 +64,37 @@ void Stepper_Motor::moveMotor(uint32_t steps, bool dir, bool type){             
     }
     const uint32_t DelayMicros = (uint32_t)500*1000/Speed;                                  // рассчитываем время задержки максимальной скорости
     float delenie = (float) 1000*1000/Acceleration;                                         // переводим ускорение в микросекунды
-    uint32_t Vel0 = 10954.45*sqrt(delenie);                                                 // расчитываем первое время для формулы ускорения    
-    float delenie2 = (float)Vel0/500/1000/delenie;                                          // отдельная переменная для упрощения расчёта в цикле
+    uint32_t Vel = 10954.45*sqrt(delenie);                                                 // расчитываем первое время для формулы ускорения    
+    float delenie2 = (float)Vel/500/1000/delenie;                                          // отдельная переменная для упрощения расчёта в цикле
 
     digitalWriteFast(_dirPin, (bool) dir+_direction);                                       // устанавливаем направление
 
     uint32_t told = micros();                                                               // фиксируем начальное время
-    for (uint32_t i=0; i<steps; i++)                                                        // делаем steps шагов
+    for (uint32_t i=0; i<steps/2; i++)                                                      // делаем steps/2 шагов
     {
         uint32_t t = micros() - told;                                                       // время, прошедшее с начала выполнения цикла
-        uint32_t DelayAccel = (uint32_t) Vel0 / (2 + (float)t*delenie2);                    // рассчитываем время задержки
+        uint32_t DelayAccel = (uint32_t) Vel / (2 + (float)t*delenie2);                    // рассчитываем время задержки
         if (DelayAccel < DelayMicros) DelayAccel = DelayMicros;                             // если нужная скорость достигнута, a = 0
         
         digitalWriteFast(_stepPin, HIGH);                                                   // подача импульсов
         delayMicroseconds(DelayAccel-1);
         digitalWriteFast(_stepPin, LOW);
         delayMicroseconds(DelayAccel);
-  }
+    }
+
+    Vel = (micros() - told)/delenie;                                                 // расчитываем первое время для формулы ускорения
+    told = micros();
+    for (uint32_t i=steps/2; i<steps; i++)                                                      // делаем steps/2 шагов
+    {
+        uint32_t t = micros() - told;                                                       // время, прошедшее с начала выполнения цикла
+        uint32_t DelayAccel = (uint32_t) Vel / (2 - (float)t*delenie2);                    // рассчитываем время задержки
+        if (DelayAccel < DelayMicros) DelayAccel = DelayMicros;                             // если нужная скорость достигнута, a = 0
+        
+        digitalWriteFast(_stepPin, HIGH);                                                   // подача импульсов
+        delayMicroseconds(DelayAccel-1);
+        digitalWriteFast(_stepPin, LOW);
+        delayMicroseconds(DelayAccel);
+    }
 }
 
 void Stepper_Motor::digitalWriteFast(uint8_t pin, bool x) {                                 // метод быстрого чтения
