@@ -70,7 +70,7 @@ void Stepper_Motor::moveMotor(uint32_t steps, bool dir, bool type){             
     digitalWriteFast(_dirPin, (bool) dir+_direction);                                       // устанавливаем направление
 
     uint32_t told = micros();                                                               // фиксируем начальное время
-    for (uint32_t i=0; i<steps; i++)                                                        // делаем steps/2 шагов
+    for (uint32_t i=0; i<steps; i++)                                                        // делаем steps шагов
     {
         uint32_t t = micros() - told;                                                       // время, прошедшее с начала выполнения цикла
         uint32_t DelayAccel = (uint32_t) Vel / (2 + (float)t*delenie2);                     // рассчитываем время задержки
